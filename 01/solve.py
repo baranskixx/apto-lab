@@ -8,7 +8,8 @@ class Solver:
         self.approaches = [
             'brute_force',
             'recursion_2k',
-            'recursion_1_168k'
+            'recursion_1_618k',
+            'recursion_1_47k'
         ]
         self.load_graphs(relational_path)
     
@@ -72,9 +73,55 @@ def recursion_2k(queue, G, k=10):
     queue.put(result)
     return result 
 
+def recursion_1_618k(queue, G, k=10):
+    def rec(G, k, s = set(), covered = set()):
+        if k <= 0:
+            return None
+
+        for u in range(len(G)):
+            if u not in covered:
+                neigh = G[u]
+                set1 = rec(G, k-1, s | {u}, covered | {u} | neigh)
+                if set1:
+                    return set1
+                else:
+                    new_s = (s | neigh) - s
+                    return rec(G, k - len(new_s), s | neigh, covered | {u} | neigh)
+        
+        return s
+    
+    result = rec(G, k)        
+    queue.put(result)
+    return result 
+
+def recursion_1_47k(queue, G, k=10):
+    def rec(G, k, s = set(), covered = set()):
+        if k <= 0:
+            return None
+        
+        V = len(G)
+        D = [(u, len(G[u])) for u in (set(range(V)) - covered)]
+
+        if len(D) == 0:
+            return s
+
+        u = sorted(D, key = lambda x : x[1] * (-1))[0][0]
+
+        neigh = G[u]
+        set1 = rec(G, k-1, s | {u}, covered | {u} | neigh)
+        if set1:
+            return set1
+        else:
+            new_s = (s | neigh) - s
+            return rec(G, k - len(new_s), s | neigh, covered | {u} | neigh)
+    
+    result = rec(G, k)        
+    queue.put(result)
+    return result 
+
 def main():
     solver = Solver('./graph/*')
-    solver.run_for_all_graphs('recursion_2k')
+    solver.run_for_all_graphs('recursion_1_47k')
 
 if __name__ == '__main__':
     main()
